@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather Rainfall Predictor</title>
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f4f7fb;
+      }
+      .container {
+        max-width: 1000px;
+        margin: 24px auto;
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      }
+      h1 {
+        margin-top: 0;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+      label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccd;
+        border-radius: 8px;
+      }
+      button {
+        margin-top: 12px;
+        background: #2f6fed;
+        color: white;
+        border: none;
+        padding: 12px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .result {
+        margin-top: 20px;
+        padding: 12px;
+        border-radius: 8px;
+        background: #eef6ff;
+      }
+      .error {
+        background: #ffecec;
+        color: #7a1f1f;
+      }
+      #chart {
+        margin-top: 22px;
+      }
+      @media (max-width: 700px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🌦️ Weather Rainfall Predictor</h1>
+      <p>Train a model with <code>train.py</code>, then predict rainfall below.</p>
+
+      <form method="post">
+        <div class="grid">
+          <div>
+            <label>Temperature (°C)</label>
+            <input name="temperature_c" type="number" step="0.1" value="{{ values.temperature_c }}" required />
+          </div>
+          <div>
+            <label>Humidity (%)</label>
+            <input name="humidity_pct" type="number" step="0.1" value="{{ values.humidity_pct }}" required />
+          </div>
+          <div>
+            <label>Wind Speed (km/h)</label>
+            <input name="wind_kmh" type="number" step="0.1" value="{{ values.wind_kmh }}" required />
+          </div>
+          <div>
+            <label>Pressure (hPa)</label>
+            <input name="pressure_hpa" type="number" step="0.1" value="{{ values.pressure_hpa }}" required />
+          </div>
+        </div>
+        <button type="submit">Predict Rainfall</button>
+      </form>
+
+      {% if prediction is not none %}
+      <div class="result">Predicted rainfall: <strong>{{ '%.2f'|format(prediction) }} mm</strong></div>
+      {% endif %}
+
+      {% if error %}
+      <div class="result error">Error: {{ error }}</div>
+      {% endif %}
+
+      <div id="chart"></div>
+    </div>
+
+    <script>
+      const sample = {{ sample_data | tojson }};
+      const x = sample.map((r) => r.humidity_pct);
+      const y = sample.map((r) => r.rainfall_mm);
+
+      Plotly.newPlot(
+        'chart',
+        [
+          {
+            x,
+            y,
+            mode: 'markers',
+            type: 'scatter',
+            marker: { color: '#2f6fed' },
+            name: 'Dataset sample',
+          },
+        ],
+        {
+          title: 'Humidity vs Rainfall (sample data)',
+          xaxis: { title: 'Humidity (%)' },
+          yaxis: { title: 'Rainfall (mm)' },
+          margin: { t: 40 },
+        }
+      );
+    </script>
+  </body>
+</html>
